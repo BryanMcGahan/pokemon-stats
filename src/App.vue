@@ -1,7 +1,8 @@
 <template>
+  <TitleBar></TitleBar>
   <div
     id="main"
-    class="container mx-auto px-6 sm:px-10 md:px-16 lg:px-20 xl:px-24"
+    class="container mx-auto px-6 sm:px-10 md:px-16 lg:px-20 xl:px-2"
   >
     <div class="flex flex-col">
       <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -15,7 +16,7 @@
             "
           >
             <table class="min-w-full divide-y divide-slate-200">
-              <thead class="bg-slate-50">
+              <thead class="bg-slate-400">
                 <tr>
                   <th
                     scope="col"
@@ -24,12 +25,16 @@
                       py-3
                       text-left text-xs
                       font-medium
-                      text-slate-500
+                      text-slate-100
                       uppercase
                       tracking-wider
+                      flex
+                      items-center
                     "
                   >
-                    Name
+                    <div class="">
+                      <p>Name</p>
+                    </div>
                   </th>
                   <th
                     scope="col"
@@ -38,7 +43,7 @@
                       py-3
                       text-left text-xs
                       font-medium
-                      text-slate-500
+                      text-slate-100
                       uppercase
                       tracking-wider
                     "
@@ -52,7 +57,7 @@
                       py-3
                       text-left text-xs
                       font-medium
-                      text-slate-500
+                      text-slate-100
                       uppercase
                       tracking-wider
                     "
@@ -66,7 +71,7 @@
                       py-3
                       text-left text-xs
                       font-medium
-                      text-slate-500
+                      text-slate-100
                       uppercase
                       tracking-wider
                     "
@@ -80,7 +85,7 @@
                       py-3
                       text-left text-xs
                       font-medium
-                      text-slate-500
+                      text-slate-100
                       uppercase
                       tracking-wider
                     "
@@ -93,17 +98,18 @@
                 <tr
                   v-for="pokemon in pokemon_list.slice(nav_start, nav_end)"
                   :key="pokemon"
+                  id="table-row"
                 >
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
                         <img
-                          :src="pokemon.sprites.back_default"
+                          :src="pokemon.sprites.front_default"
                           alt=""
-                          v-if="pokemon.sprites.back_default != null"
+                          v-if="pokemon.sprites.front_default != null"
                         />
                         <img
-                          :src="pokemon.sprites.front_default"
+                          :src="pokemon.sprites.back_default"
                           alt=""
                           v-else
                         />
@@ -111,6 +117,7 @@
                       <div class="ml-4">
                         <div>
                           <button
+                            @click="toggleOverlay(pokemon)"
                             class="
                               text-sm
                               font-medium
@@ -236,8 +243,196 @@
     </div>
   </div>
   <div
+    class="
+      container
+      mx-auto
+      bg-white/70
+      backdrop-blur-xl
+      z-20
+      fixed
+      bottom-0
+      top-0
+      w-full
+      h-full
+      md:w-3/5
+      xl:w-3/6
+      2xl:w-2/6
+      border border-white
+      rounded-l-lg
+      right-0
+      px-8
+      sm:px-14
+      py-16
+      sm:py-20
+    "
+    :class="overlay ? 'absolute' : 'hidden'"
+  >
+    <div>
+      <button class="absolute top-5 left-4" @click="overlay = !overlay">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="36px"
+          viewBox="0 0 24 24"
+          width="36px"
+          fill="#000000"
+        >
+          <path d="M0 0h24v24H0V0z" fill="none" />
+          <path
+            d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"
+          />
+        </svg>
+      </button>
+      <div class="flex flex-row space-x-4 justify-start items-end">
+        <div>
+          <img
+            :src="this.pokemon.profile"
+            alt="Photo"
+            class="
+              w-48
+              bg-white/30
+              border
+              backdrop-blur-lg
+              rounded-xl
+              shadow-md
+            "
+          />
+        </div>
+        <div>
+          <div>
+            <p class="font-semibold text-2xl pb-2">{{ this.pokemon.name }}</p>
+          </div>
+          <div>
+            <p class="font-medium text-md pb-4">
+              Types:
+              <span
+                v-for="type in pokemon.types"
+                :key="type"
+                class="
+                  flex-row
+                  mx-1
+                  bg-green-600
+                  text-sm
+                  px-2
+                  py-1
+                  rounded-full
+                  shadow-md
+                "
+                >{{ type.type.name }}</span
+              >
+            </p>
+          </div>
+          <div class="flex -space-x-1">
+            <div
+              v-for="sprite in Object.fromEntries(
+                Object.entries(pokemon.sprites).slice(0, 6)
+              )"
+              :key="sprite"
+            >
+              <img
+                :src="sprite"
+                v-if="sprite != null && typeof sprite === 'string'"
+                class="
+                  w-12
+                  h-12
+                  rounded-full
+                  shadow-lg
+                  bg-white
+                  backdrop-blur-lg
+                "
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col space-x-0 space-y-2 md:flex-row md:space-x-2 md:space-y-0  mt-4">
+        <div
+          class="
+            bg-white/70
+            backdrop-blur-xl
+            md:w-4/6
+            h-fit
+            rounded-lg
+            py-2
+            px-4
+            shadow-xl
+          "
+        >
+          <div>
+            <div class="grid grid-cols-2 gap-3">
+              <div
+                v-for="stat in pokemon.stats"
+                :key="stat"
+                class="
+                  bg-white/80
+                  backdrop-blur-xl
+                  w-full
+                  h-32
+                  shadow-md
+                  rounded-lg
+                  py-2
+                  px-2
+                "
+              >
+                <p class="border-b uppercase mb-2 text-sm">
+                  {{ stat.stat.name }}
+                </p>
+                <p class="text-sm font-light">
+                  Base Stat: <span>{{ stat.base_stat }}</span>
+                </p>
+                <p class="text-sm font-light">
+                  Effort: <span>{{ stat.effort }}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="md:w-2/6 flex-row space-y-2">
+          <div class="bg-white/70 backdrop-blur-xl rounded-lg shadow-xl  py-2 px-3">
+            <p class="border-b text-base mb-2">Abilities 👇🏼</p>
+            <div v-for="ability in pokemon.abilities" :key="ability">
+              <p class="text-sm">{{ ability.ability.name }}</p>
+            </div>
+          </div>
+          <div
+            class="
+              bg-white/70
+              backdrop-blur-xl
+              w-full
+              h-fit
+              rounded-lg
+              shadow-xl
+              py-2
+              px-3
+            "
+          >
+            <p class="border-b text-base mb-2">Moves 👇🏼</p>
+            <div v-for="move in pokemon.moves.slice(0, 15)" :key="move">
+              <p class="text-sm">{{ move.move.name }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="absolute z-10 top-0 bottom-0 bg-black/30 backdrop-blur w-screen h-full"
+    :class="overlay ? 'absolute' : 'hidden'"
+    @click="overlay = !overlay"
+  ></div>
+  <div
     id="loader"
-    class="top-0 bottom-0 left-0 right-0 fixed z-10 bg-slate-900 flex flex-col items-center justify-center"
+    class="
+      top-0
+      bottom-0
+      left-0
+      right-0
+      fixed
+      z-10
+      bg-slate-900
+      flex flex-col
+      items-center
+      justify-center
+    "
     v-if="isLoading"
   >
     <div>
@@ -263,7 +458,11 @@
 
 <script>
 import axios from "axios";
+import TitleBar from "./components/TitleBar.vue";
 export default {
+  components: {
+    TitleBar,
+  },
   data() {
     return {
       pokemon_list: [],
@@ -273,6 +472,7 @@ export default {
         height: null,
         weight: null,
         sprites: [],
+        profile: null,
         types: [],
         forms: [],
         abilities: [],
@@ -283,28 +483,28 @@ export default {
       nav_end: 10,
       pages: 0,
       isLoading: true,
+      offset: 0,
+      overlay: false,
     };
   },
 
-  beforeCreate(){
-
-  },
+  beforeCreate() {},
 
   created() {
     this.getPokemonList();
   },
 
-  mounted(){
+  mounted() {
     setTimeout(() => {
       this.isLoading = false;
-    }, 2000)
+    }, 2000);
   },
 
   methods: {
     async getPokemonList() {
       try {
         const response = await axios.get(
-          "https://pokeapi.co/api/v2/pokemon?limit=1118"
+          "https://pokeapi.co/api/v2/pokemon?limit=10&offset=" + this.offset
         );
         const data = response.data.results;
         for (let i = 0; i < data.length; i++) {
@@ -312,17 +512,6 @@ export default {
             const response = await axios.get(data[i].url);
             const pokemon = response.data;
             this.pokemon_list.push(pokemon);
-            // this.pokemon_list.sort(function (a, b) {
-            //   if (a.name < b.name) {
-            //     return -1;
-            //   }
-            //   {
-            //     if (a.name > b.name) {
-            //       return 1;
-            //     }
-            //   }
-            //   return 0;
-            // });
           } catch (error) {
             console.log(error);
           }
@@ -330,14 +519,13 @@ export default {
       } catch (error) {
         console.log(error);
       }
-
-
     },
 
     async getIndiPokemon(pokemon) {
+      var new_pokemon = pokemon.toLowerCase();
       try {
         const response = await axios.get(
-          "http://pokeapi.co/api/v2/pokemon/" + pokemon
+          "http://pokeapi.co/api/v2/pokemon/" + new_pokemon
         );
         const data = response.data;
         this.pokemon.name = data.name;
@@ -351,6 +539,21 @@ export default {
         this.pokemon.moves = data.moves;
         this.pokemon.stats = data.stats;
         console.log(this.pokemon);
+        this.pokemon = {
+          pokemon: {
+            name: null,
+            base_experience: null,
+            height: null,
+            weight: null,
+            sprites: [],
+            types: [],
+            forms: [],
+            abilities: [],
+            moves: [],
+            stats: [],
+          },
+        };
+        document.getElementById("search").value = "";
       } catch (error) {
         console.log(error);
       }
@@ -365,10 +568,24 @@ export default {
     },
 
     async goForward() {
-      if (!(this.nav_end + 10 > this.pokemon_list.length + 2)) {
+      if (!(this.nav_end + 10 > 1120)) {
         this.nav_start += 10;
         this.nav_end += 10;
+        this.offset += 10;
+        this.getPokemonList();
       }
+    },
+
+    async searchTable() {
+      const pokemon = document.getElementById("search").value;
+      this.getIndiPokemon(pokemon);
+      console.log(this.pokemon);
+    },
+
+    toggleOverlay(pokemon) {
+      this.pokemon = pokemon;
+      this.pokemon.profile = pokemon.sprites.other.home.front_default;
+      this.overlay = !this.overlay;
     },
   },
 };
